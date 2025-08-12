@@ -1,9 +1,23 @@
-function Todo() {
+import React, { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+
+function Todo({ name }) {
+  const [checked, setChecked] = useState(false);
+
   return (
     <li className="list-group-item d-flex align-items-center">
-      <input type="checkbox" className="form-check-input me-2" />
-      <span className="flex-grow-1">Nhiệm vụ mẫu</span>
-      <button className="btn btn-danger btn-sm ms-3">X</button>
+      <input
+        type="checkbox"
+        className="form-check-input me-2"
+        checked={checked}
+        onChange={() => setChecked(!checked)}
+      />
+      <span style={{ textDecoration: checked ? "line-through" : "none" }}>
+        {name}
+      </span>
+
+      <button className="btn btn-close btn-outline-danger ms-auto "></button>
     </li>
   );
 }
