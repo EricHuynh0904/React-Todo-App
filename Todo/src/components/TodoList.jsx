@@ -9,8 +9,11 @@ function TodoList() {
   return (
     <ul className="list-group">
       {todoList.map(todo => (
-        <Todo key={todo.id} id={todo.id} name={todo.name} />
+        <Todo key={todo.id} id={todo.id} name={todo.name} complete={todo.complete} />
+        
       ))}
+      
+
     </ul>
   );
 }

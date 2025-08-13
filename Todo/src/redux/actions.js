@@ -5,3 +5,11 @@ export const addTodo = (data) => {
 
     };
 }
+
+export const deleteTodo = (id) => {
+    return {
+    type: 'todo/deleteTodo',
+    payload: id
+    };
+};
+

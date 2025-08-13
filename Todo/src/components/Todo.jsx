@@ -1,9 +1,26 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useDispatch } from 'react-redux';
+import { deleteTodo } from '../redux/actions';
 
 
-function Todo({ name }) {
+
+
+
+
+
+
+
+function Todo({ id, name}) {
   const [checked, setChecked] = useState(false);
+
+  const dispatch = useDispatch();
+
+  const handleDelete = () => {
+  dispatch(deleteTodo(id));
+  };
+
+
 
   return (
     <li className="list-group-item d-flex align-items-center">
@@ -13,11 +30,13 @@ function Todo({ name }) {
         checked={checked}
         onChange={() => setChecked(!checked)}
       />
-      <span style={{ textDecoration: checked ? "line-through" : "none" }}>
+      <span style={{ textDecoration: checked ? "line-through" : "none", opacity: checked ? 0.5 : 1 }}>
+        
         {name}
+        
       </span>
 
-      <button className="btn btn-close btn-outline-danger ms-auto "></button>
+      <button className="btn btn-close btn-outline-danger ms-auto" onClick={handleDelete}></button>
     </li>
   );
 }

@@ -10,12 +10,14 @@ function Header() {
   const dispatch = useDispatch();
   
   const handleAddTodo = () => {
+    if (todoName === ''){
+      return;
+    }
       dispatch(addTodo({
         id: uuidv4(),
         name: todoName,
         completed: false
       }));
-
       setTodoName('');
   }
 
