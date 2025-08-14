@@ -17,9 +17,14 @@ const rootReducer = (state = initState, action)  => {
         ...state,
         todos: state.todos.filter(todo => todo.id !== action.payload)
         }
+
+    case 'todo/toggleTodo':
+        return{
+            ...state,
+            todos: state.todos.map(todo => todo.id === action.payload ? {...todo, completed: !todo.completed} : todo)
+        }
     
 
-        
         default:
             return state;
         }

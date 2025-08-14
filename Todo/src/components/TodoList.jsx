@@ -9,7 +9,7 @@ function TodoList() {
   return (
     <ul className="list-group">
       {todoList.map(todo => (
-        <Todo key={todo.id} id={todo.id} name={todo.name} complete={todo.complete} />
+        <Todo key={todo.id} id={todo.id} name={todo.name} completed={todo.completed} />
         
       ))}
       
@@ -19,3 +19,4 @@ function TodoList() {
 }
 
 export default TodoList;
+

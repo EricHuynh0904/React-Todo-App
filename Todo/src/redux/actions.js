@@ -13,3 +13,9 @@ export const deleteTodo = (id) => {
     };
 };
 
+export const toggleTodo = (id) => {
+    return{
+        type: 'todo/toggleTodo',
+        payload: id
+    }
+}
