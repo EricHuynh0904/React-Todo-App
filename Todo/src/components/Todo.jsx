@@ -1,7 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useDispatch } from 'react-redux';
-import { deleteTodo, toggleTodo } from '../redux/actions';
+import { deleteTodo, toggleTodo} from '../redux/actions';
 
 
 
@@ -25,7 +25,8 @@ function Todo({ id, name, completed}) {
     dispatch(toggleTodo(id));
   };
   
-
+  
+  
 
   return (
 
@@ -41,9 +42,9 @@ function Todo({ id, name, completed}) {
         <span style={{ textDecoration: completed ? "line-through" : "none", opacity: completed ? 0.5 : 1 }}>
           {name}
         </span>
-      
-      
 
+
+      
       <button className="btn btn-close btn-outline-danger ms-auto" onClick={handleDelete}></button>
     </li>
   );

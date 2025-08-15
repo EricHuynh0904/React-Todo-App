@@ -18,4 +18,19 @@ export const toggleTodo = (id) => {
         type: 'todo/toggleTodo',
         payload: id
     }
+
+
+}
+
+export const deleteCompleted = (id) => {
+    return{
+        type: 'todo/deleteCompleted',
+        payload: id
+    }
+}
+
+export const selectAllTodos = () => {
+    return {
+        type: 'todo/selectAll'
+    };
 }
