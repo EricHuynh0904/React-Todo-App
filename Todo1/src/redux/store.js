@@ -1,6 +1,12 @@
-import { createStore } from 'redux';
-import rootReducer from './reducers';
+import { configureStore } from '@reduxjs/toolkit';
+import todoListReducer from './todoListSlice';
+import todoReducer from './todoSlice';
 
-const store = createStore(rootReducer);
+const store = configureStore({
+  reducer: {
+    todo: todoReducer,
+    todoList: todoListReducer
+  }
+});
 
 export default store;

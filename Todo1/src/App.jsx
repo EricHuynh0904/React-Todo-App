@@ -10,19 +10,34 @@ import Todo from './components/Todo'
 import { useEffect } from 'react'
 
 
-function App() {
 
+function App() {
+  const [selectedListId, setSelectedListId] = React.useState(null);
+    useEffect(() => {
+    console.log("selectedListId hiện tại:", selectedListId);
+  }, [selectedListId]);
+
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  if (token) {
+    localStorage.setItem("token", token);
+    window.history.replaceState({}, document.title, "/");
+  }
+}, []);
 
 
   return (
     <>
+      
       <div className="d-flex flex-column min-vh-100">
-     <Header  />
+     <Header  selectedListId={selectedListId}/>
       <div className="container-fluid flex-grow-1 d-flex p-0">
-        <SideBar />
+        <SideBar selectedListId={selectedListId} setSelectedListId={setSelectedListId}/>
         <main className="flex-grow-1 p-4 bg-light">
-          <Todo/>
-         
+          <TodoList selectedListId={selectedListId}/>
+
         </main>
       </div>
       <Footer />

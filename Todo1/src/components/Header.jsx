@@ -1,91 +1,62 @@
-
-import React from 'react';
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addTodo } from '../redux/actions';
-import { selectAllTodos } from '../redux/actions';
-import {v4 as uuidv4} from 'uuid';
+import React, { useState } from 'react';
 import ModalAddTodo from './ModalAddTodo';
-import { createTodo } from '../../services/todo';
+import { createTodoInList } from '../../services/todo';
 
-function Header({ selectedListId}) {
-  const [todoName, setTodoName] = React.useState('');
-  const [todoDescription, setTodoDescription] = React.useState('');
-  const [todoDueDate, setTodoDueDate] = React.useState('');
-  const [todoPriority, setTodoPriority] = React.useState('medium');
-  const dispatch = useDispatch();
-  const [todos, setTodos] = useState([]);
-
-  
-  
-  const handleInput = (e) => {
-    console.log(handleInput,e.target.value);
-    setTodoName(e.target.value);
-  }
-
-  const handleSelectAll = () => {
-    dispatch(selectAllTodos());
-  }
-
- const [show, setShow] = useState(false);
-
+function Header({ selectedListId }) {
+  const [show, setShow] = useState(false);
+  const [todoName, setTodoName] = useState('');
+  const [todoDescription, setTodoDescription] = useState('');
+  const [todoDueDate, setTodoDueDate] = useState('');
+  const [todoPriority, setTodoPriority] = useState('med');
+  const [error, setError] = useState('');
 
   const handleClose = () => {
     setShow(false);
-    setTodoName("");
-  };
-  const handleShow = () => setShow(true);
-
-  const handleSave = async (todo) => {
-    console.log("selectedListId:", selectedListId);
-  try {
-    console.log("Trước khi gọi API");
-const res = await createTodo(selectedListId, todo);
-console.log("Sau khi gọi API", res);
     setTodoName('');
-    handleClose();
-  } catch (err) {
-    alert("Có lỗi khi thêm công việc!");
-  }
-};
+    setTodoDescription('');
+    setTodoDueDate('');
+    setTodoPriority('med');
+    setError('');
+  };
+
+    const handleSave = async (body) => {
+    console.log('[Header] body from modal:', body);
+    if (!body?.title?.trim()) { setError('Vui lòng nhập tiêu đề!'); return; }
+    if (!selectedListId) { setError('Vui lòng chọn danh sách!'); return; }
+    try {
+      const res = await createTodoInList(Number(selectedListId), body);
+      const created = res?.data ?? res;
+
+    
+      window.dispatchEvent(new CustomEvent('todo:created', {
+        detail: { listId: Number(selectedListId), todo: created }
+      }));
+
+      handleClose();
+    } catch (err) {
+      console.error('[Header] API ERR:', err?.response?.status, err?.response?.data || err.message);
+      setError(err?.response?.data?.message || 'Có lỗi khi lưu Todo!');
+    }
+  };
 
   return (
     <header className="p-3 mb-3 border-bottom">
-      <div className="container">
-        <div className="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-          <a href="/" className="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
-            <svg className="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap">
-              <use xlinkHref="#bootstrap"></use>
-            </svg>
-          </a>
-
-          <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-            <li><a href="#" className="nav-link px-2 link-secondary">Overview</a></li>
-            <li><a href="#" className="nav-link px-2 link-dark">Inventory</a></li>
-            <li><a href="#" className="nav-link px-2 link-dark">Customers</a></li>
-            <li><a href="#" className="nav-link px-2 link-dark">Products</a></li>
-          </ul>
-
-          <form className="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
-            <input type="search" className="form-control" placeholder="Search..." aria-label="Search"/>
-          </form>
-
-          <button className="btn btn-dark shadow-sm addTodo me-2" onClick={handleShow}>
-            + Công việc mới
-          </button>
-        </div>
+      <div className="container d-flex justify-content-between me-10">
+        <strong>Todo App</strong>
+        <button className="btn btn-dark" onClick={() => setShow(true)}>+ Công việc mới</button>
       </div>
-      <div className="nav col-md-4 justify-content-end list-unstyled d-flex"></div>
+
       <ModalAddTodo
         show={show}
         onClose={handleClose}
         onSave={handleSave}
-        todoName={todoName}
-        setTodoName={setTodoName}
+        todoName={todoName} setTodoName={setTodoName}
+        todoDescription={todoDescription} setTodoDescription={setTodoDescription}
+        todoDueDate={todoDueDate} setTodoDueDate={setTodoDueDate}
+        todoPriority={todoPriority} setTodoPriority={setTodoPriority}
       />
-     
+      {error && <div className="text-danger mt-2 ms-3">{error}</div>}
     </header>
   );
 }
-
-export default Header
+export default Header;

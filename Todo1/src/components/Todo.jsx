@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useDispatch } from 'react-redux';
-import { deleteTodo, toggleTodo } from '../redux/actions';
+import { deleteTodo, updateTodo } from '../../services/todo';
 import ModalConfirmDelete from './ModalConfirmDelete';
+import ModalAddTodo from './ModalAddTodo';
 
-function Todo({ id, name, completed, priority = "med", dueDate = "2024-07-25" }) {
-  const dispatch = useDispatch();
+
+function Todo({ id, name, completed, priority = "med", dueDate, onDeleted }) {
+
   const [showDelete, setShowDelete] = useState(false);
-
-  const handleDelete = () => {
-    dispatch(deleteTodo(id));
-    setShowDelete(false);
-  };
-
-  const handleToggle = () => {
-    dispatch(toggleTodo(id));
-  };
+  const [deleting, setDeleting] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [todoName, setTodoName] = useState(name || "");
+  const [todoDescription, setTodoDescription] = useState("");
+  const [todoDueDate, setTodoDueDate] = useState(dueDate || "");
+  const [todoPriority, setTodoPriority] = useState(priority || "med");
+  const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [editTodoId, setEditTodoId] = useState(null);
+  const [todoLists, setTodoLists] = useState([]);
+  const dispatch = useDispatch();
 
   const getPriorityLabel = (priority) => {
     if (priority === "high")
@@ -25,6 +30,67 @@ function Todo({ id, name, completed, priority = "med", dueDate = "2024-07-25" })
     return <span className="badge rounded-pill" style={{ background: "#D1FADF", color: "#12B76A" }}>Thấp</span>;
   };
 
+    const handleShowRename = (id, oldName, oldDescription, oldDueDate, oldPriority) => {
+    setEditMode(true);
+    setEditTodoId(id);
+    setTodoName(oldName);
+    setTodoDescription(oldDescription);
+    setTodoDueDate(oldDueDate);
+    setTodoPriority(oldPriority);
+    setShowEdit(true);
+  };
+
+
+   const handleClose = () => {
+    setShowEdit(false);
+    // setTodoName("");
+    // setTodoDescription("");
+    // setTodoDueDate("");
+    // setTodoPriority("med");
+    setError("");
+  };
+
+  const handleRename = async (body) => {
+     const payload = {
+      title: (body?.title ?? todoName ?? '').trim(),
+      description: body?.description ?? todoDescription ?? '',
+      priority: body?.priority ?? todoPriority ?? 'med',
+      dueDate: body?.dueDate ?? (todoDueDate || null),
+    };
+
+    if (!payload?.title?.trim()) { setError('Vui lòng nhập tiêu đề!'); return; }
+    if (!editTodoId) { setError('Không tìm thấy Todo để cập nhật!'); return; }
+    try {
+      const res = await updateTodo(editTodoId, payload);
+      const updated = res?.data ?? res;
+
+      window.dispatchEvent(new CustomEvent('todo:updated', {
+        detail: { id: editTodoId, todo: updated }
+      }));
+
+      setTodoName(updated.title);
+      setTodoDescription(updated.description || "");
+      setTodoDueDate(updated.dueDate || "");
+      setTodoPriority(updated.priority || "med");
+      handleClose();
+    } catch (err) {
+      console.error('[Todo] API ERR:', err?.response?.status, err?.response?.data || err.message);
+      setError(err?.response?.data?.message || 'Có lỗi khi cập nhật Todo!');
+    }
+  };
+
+    const handleDelete = async (id) => {
+      try {
+        await deleteTodo(id);
+        setTodoLists(prev => prev.filter(x => x?.id !== id));
+        if (onDeleted) onDeleted(id);
+
+      } catch (err) {
+        console.error(err);
+        setError("Có lỗi khi xóa danh sách!");
+      }
+    };
+  
   return (
     <>
       <li
@@ -34,7 +100,7 @@ function Todo({ id, name, completed, priority = "med", dueDate = "2024-07-25" })
           type="checkbox"
           className="form-check-input ms-3"
           checked={completed}
-          onChange={handleToggle}
+         
           style={{ width: 20, height: 20, accentColor: "#344054" }}
         />
 
@@ -46,7 +112,7 @@ function Todo({ id, name, completed, priority = "med", dueDate = "2024-07-25" })
             fontSize: 18,
           }}
         >
-          {name}
+          {todoName}
         </span>
 
         <div className="d-flex align-items-center gap-2">
@@ -54,8 +120,17 @@ function Todo({ id, name, completed, priority = "med", dueDate = "2024-07-25" })
           <span className="text-secondary ms-2" style={{ fontSize: 15 }}>
             <i className="bi bi-calendar-event" /> {dueDate}
           </span>
-          <button className="btn btn-link text-secondary px-2">
-            <i className="bi bi-pencil" />
+          <button
+                    className="bg-white"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleShowRename(id, todoName, todoDescription, todoDueDate, todoPriority);
+                    }}
+          >
+            {renaming
+              ? <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+              : <i className="bi bi-pencil" />
+            }
           </button>
           <button
             className="btn btn-outline-danger px-2 btn-sm"
@@ -68,7 +143,17 @@ function Todo({ id, name, completed, priority = "med", dueDate = "2024-07-25" })
       <ModalConfirmDelete
         show={showDelete}
         onClose={() => setShowDelete(false)}
-        onConfirm={handleDelete}
+        onConfirm={() => handleDelete(id)}
+      />
+
+      <ModalAddTodo
+        show={showEdit}
+        onClose={handleClose}
+        onSave={handleRename}
+        todoName={todoName} setTodoName={setTodoName}
+        todoDescription={todoDescription} setTodoDescription={setTodoDescription}
+        todoDueDate={todoDueDate} setTodoDueDate={setTodoDueDate}
+        todoPriority={todoPriority} setTodoPriority={setTodoPriority}
       />
     </>
   );

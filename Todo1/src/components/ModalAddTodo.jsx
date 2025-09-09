@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-function ModalAddTodo({ show, onClose, onSave, todoName, setTodoName }) {
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState('high');
-  const [dueDate, setDueDate] = useState('');
+function ModalAddTodo({
+  show,
+  onClose,
+  onSave,
+  todoName, setTodoName,
+  todoDescription, setTodoDescription,
+  todoPriority, setTodoPriority,
+  todoDueDate, setTodoDueDate,
+}) {
   const [completed, setCompleted] = useState(false);
 
 
@@ -35,30 +40,30 @@ function ModalAddTodo({ show, onClose, onSave, todoName, setTodoName }) {
             as="textarea"
             rows={3}
             placeholder="Nhập mô tả"
-            value={description}
-            onChange={e => setDescription(e.target.value)}
+            value={todoDescription}
+            onChange={e => setTodoDescription(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="mb-3">
           <Form.Label>Mức độ ưu tiên</Form.Label>
           <div>
             <Button
-              variant={priority === 'low' ? 'secondary' : 'outline-secondary'}
+              variant={todoPriority === 'low' ? 'secondary' : 'outline-secondary'}
               className="me-2"
-              onClick={() => setPriority('low')}
+              onClick={() => setTodoPriority('low')}
             >
               Thấp
             </Button>
             <Button
-              variant={priority === 'med' ? 'secondary' : 'outline-secondary'}
+              variant={todoPriority === 'med' ? 'secondary' : 'outline-secondary'}
               className="me-2"
-              onClick={() => setPriority('med')}
+              onClick={() => setTodoPriority('med')}
             >
               Trung bình
             </Button>
             <Button
-              variant={priority === 'high' ? 'dark' : 'outline-dark'}
-              onClick={() => setPriority('high')}
+              variant={todoPriority === 'high' ? 'dark' : 'outline-dark'}
+              onClick={() => setTodoPriority('high')}
             >
               Cao
             </Button>
@@ -68,8 +73,8 @@ function ModalAddTodo({ show, onClose, onSave, todoName, setTodoName }) {
           <Form.Label>Ngày đáo hạn</Form.Label>
           <Form.Control
             type="date"
-            value={dueDate}
-            onChange={e => setDueDate(e.target.value)}
+            value={todoDueDate}
+            onChange={e => setTodoDueDate(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="mb-3" controlId="completedSwitch">
@@ -86,17 +91,19 @@ function ModalAddTodo({ show, onClose, onSave, todoName, setTodoName }) {
         <Button variant="outline-secondary" onClick={onClose}>
           Hủy
         </Button>
-        <Button
+    <Button
   variant="dark"
+  disabled={!todoName?.trim()}
   onClick={() => {
-    console.log("Bấm Lưu ở ModalAddTodo");
-    onSave({
-      title: todoName,
-      description,
-      priority,
-      dueDate,
-      completed
-    });
+    const payload = {
+      title: (todoName || '').trim(),
+      description: (todoDescription || '').trim(),
+      priority: todoPriority,           // giữ chuỗi: low|med|high
+      dueDate: todoDueDate || null,     // camelCase như Postman
+      
+    };
+    console.log('[Modal] payload:', payload);
+    onSave(payload);
   }}
 >
   Lưu
